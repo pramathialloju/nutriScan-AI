@@ -59,6 +59,7 @@ export interface RecommendationFilter {
   dietary?: 'all' | 'vegetarian' | 'non-vegetarian';
   focus?: 'balanced' | 'high-protein' | 'indian-cuisine' | 'weight-management';
   mealType?: 'all' | MealSlot;
+  cuisine?: string;
 }
 
 export interface RecommendedFood {
@@ -193,11 +194,13 @@ export function generateRecommendations(
     dietary = 'all',
     focus = 'balanced',
     mealType = 'all',
+    cuisine = 'all',
   } = filter;
 
   let candidates = foods.filter((f) => {
     if (dietary !== 'all' && f.dietaryType !== dietary) return false;
     if (mealType !== 'all' && !f.mealTypes.includes(mealType)) return false;
+    if (cuisine !== 'all' && f.category !== cuisine) return false;
     return true;
   });
 

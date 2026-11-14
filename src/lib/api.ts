@@ -18,6 +18,7 @@ export interface PredictionApiResponse {
     isFood: boolean;
     status: 'matched' | 'low_confidence' | 'unsupported';
     mode: 'gemini-vision' | 'demonstration';
+    nutritionSource?: 'dataset' | 'ai-estimate';
     reasoning: string;
     matchedFood: FoodItem | null;
     message: string;
@@ -151,6 +152,7 @@ export async function fetchRecommendations(params: {
   dietary: string;
   focus: string;
   mealType: string;
+  cuisine?: string;
 }): Promise<RecommendedFood[]> {
   const sp = new URLSearchParams(params);
   const res = await fetch(`/api/recommendations?${sp.toString()}`);

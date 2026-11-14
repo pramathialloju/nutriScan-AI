@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { CheckCircle2, Info, Plus, Search } from 'lucide-react';
-import { FoodItem, MEAL_SLOTS, MealSlot } from '../lib/nutritionData';
+import { CUISINE_CATEGORIES, FoodItem, MEAL_SLOTS, MealSlot } from '../lib/nutritionData';
 import { scaleNutrition } from '../lib/nutritionCalc';
 
 interface NutritionAnalysisViewProps {
@@ -25,7 +25,7 @@ export function NutritionAnalysisView({
   onAddToDiary,
 }: NutritionAnalysisViewProps) {
   const [query, setQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<'all' | 'Indian' | 'Food-101'>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [dietaryFilter, setDietaryFilter] = useState<'all' | 'vegetarian' | 'non-vegetarian'>('all');
   const [selectedId, setSelectedId] = useState<string>(
     foods.find((f) => f.id === 'indian_masala_dosa')?.id || foods[0]?.id || ''
@@ -34,13 +34,27 @@ export function NutritionAnalysisView({
   const [mealSlot, setMealSlot] = useState<MealSlot>('Lunch');
   const [savedNotice, setSavedNotice] = useState<string | null>(null);
 
+  const cuisineOptions = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const f of foods) {
+      counts.set(f.category, (counts.get(f.category) ?? 0) + 1);
+    }
+    const ordered: string[] = [...CUISINE_CATEGORIES];
+    for (const cat of counts.keys()) {
+      if (!ordered.includes(cat)) ordered.push(cat);
+    }
+    return ordered
+      .filter((cat) => (counts.get(cat) ?? 0) > 0)
+      .map((cat) => ({ name: cat, count: counts.get(cat) ?? 0 }));
+  }, [foods]);
+
   const filteredFoods = useMemo(() => {
     const q = query.trim().toLowerCase();
     return foods.filter((f) => {
       if (categoryFilter !== 'all' && f.category !== categoryFilter) return false;
       if (dietaryFilter !== 'all' && f.dietaryType !== dietaryFilter) return false;
       if (q) {
-        const hay = `${f.name} ${f.aliases.join(' ')} ${f.notes}`.toLowerCase();
+        const hay = `${f.name} ${f.category} ${f.aliases.join(' ')} ${f.notes}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
@@ -75,29 +89,26 @@ export function NutritionAnalysisView({
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search Idli, Masala Dosa, Dal, Biryani, Salmon..."
+              placeholder="Search Dosa, Ramen, Tacos, Pasta, Falafel, Biryani..."
               aria-label="Search food nutrition database"
               className="w-full pl-10 pr-4 py-2 text-sm bg-[#F8FAF9] border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
             />
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
-              {(['all', 'Indian', 'Food-101'] as const).map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setCategoryFilter(cat)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer ${
-                    categoryFilter === cat
-                      ? 'bg-white text-slate-900 shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  {cat === 'all' ? 'All Cuisines' : cat}
-                </button>
+            <select
+              aria-label="Filter by cuisine"
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="px-3 py-2 text-xs font-medium text-slate-800 bg-[#F8FAF9] border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 cursor-pointer"
+            >
+              <option value="all">All Cuisines ({foods.length})</option>
+              {cuisineOptions.map((c) => (
+                <option key={c.name} value={c.name}>
+                  {c.name} ({c.count})
+                </option>
               ))}
-            </div>
+            </select>
 
             <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
               {(['all', 'vegetarian', 'non-vegetarian'] as const).map((diet) => (

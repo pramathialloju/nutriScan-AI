@@ -64,7 +64,7 @@ const ROUTE_META: Record<AppRoute, { title: string; subtitle: string }> = {
   },
   nutrition: {
     title: 'Nutrition Information',
-    subtitle: 'Inspect calories, macronutrients, and fiber across Indian & Food-101 dishes',
+    subtitle: 'Inspect calories, macronutrients, and fiber across multi-cuisine dishes',
   },
   recommendations: {
     title: 'Recommendations',

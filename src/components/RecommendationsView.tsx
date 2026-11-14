@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { CheckCircle2, Info, Plus } from 'lucide-react';
-import { FoodItem, MEAL_SLOTS, MealSlot } from '../lib/nutritionData';
+import { CUISINE_CATEGORIES, FoodItem, MEAL_SLOTS, MealSlot } from '../lib/nutritionData';
 import { RecommendedFood } from '../lib/nutritionCalc';
 import { fetchRecommendations } from '../lib/api';
 
@@ -22,6 +22,7 @@ export function RecommendationsView({
     'balanced' | 'high-protein' | 'indian-cuisine' | 'weight-management'
   >('balanced');
   const [mealType, setMealType] = useState<'all' | MealSlot>('all');
+  const [cuisine, setCuisine] = useState<string>('all');
   const [items, setItems] = useState<RecommendedFood[]>(initialRecommendations);
   const [loading, setLoading] = useState(false);
   const [loggedId, setLoggedId] = useState<string | null>(null);
@@ -29,7 +30,7 @@ export function RecommendationsView({
   useEffect(() => {
     let active = true;
     setLoading(true);
-    fetchRecommendations({ dietary, focus, mealType })
+    fetchRecommendations({ dietary, focus, mealType, cuisine })
       .then((recs) => {
         if (active) setItems(recs);
       })
@@ -39,7 +40,7 @@ export function RecommendationsView({
     return () => {
       active = false;
     };
-  }, [dietary, focus, mealType]);
+  }, [dietary, focus, mealType, cuisine]);
 
   const handleLog = async (food: FoodItem) => {
     const targetMeal =
@@ -61,11 +62,11 @@ export function RecommendationsView({
             Personalize Meal Suggestions
           </h2>
           <p className="text-xs text-slate-500 mt-1">
-            Generated dynamically from the Indian and Food-101 nutrition dataset
+            Generated dynamically across multi-cuisine dishes (Indian, Italian, Asian, Mexican, Mediterranean &amp; American)
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <label
               htmlFor="rec-dietary"
@@ -136,6 +137,28 @@ export function RecommendationsView({
               {MEAL_SLOTS.map((slot) => (
                 <option key={slot} value={slot}>
                   {slot}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label
+              htmlFor="rec-cuisine"
+              className="block text-xs font-medium text-slate-600 mb-1.5"
+            >
+              Cuisine
+            </label>
+            <select
+              id="rec-cuisine"
+              value={cuisine}
+              onChange={(e) => setCuisine(e.target.value)}
+              className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg"
+            >
+              <option value="all">All Cuisines</option>
+              {CUISINE_CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
                 </option>
               ))}
             </select>

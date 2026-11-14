@@ -138,9 +138,8 @@ export function getDb(): DatabaseSync {
   return db;
 }
 
-function seedInitialData(db: DatabaseSync) {
-  // Always ensure foods table is populated/synced with FOOD_DATASET
-  const upsertFood = db.prepare(`
+function upsertFoodRow(db: DatabaseSync, f: FoodItem): void {
+  db.prepare(`
     INSERT INTO foods (
       id, slug, name, category, dietary_type, meal_types_json,
       serving_label, serving_grams, calories, protein_g, carbs_g,
@@ -165,30 +164,38 @@ function seedInitialData(db: DatabaseSync) {
       balanced_weight_friendly = excluded.balanced_weight_friendly,
       aliases_json = excluded.aliases_json,
       notes = excluded.notes
-  `);
+  `).run(
+    f.id,
+    f.slug,
+    f.name,
+    f.category,
+    f.dietaryType,
+    JSON.stringify(f.mealTypes),
+    f.servingLabel,
+    f.servingGrams,
+    f.calories,
+    f.protein_g,
+    f.carbs_g,
+    f.fat_g,
+    f.fiber_g,
+    f.sodium_mg,
+    f.sugar_g,
+    f.proteinRich ? 1 : 0,
+    f.balancedWeightFriendly ? 1 : 0,
+    JSON.stringify(f.aliases),
+    f.notes
+  );
+}
 
+export function upsertFoodItem(food: FoodItem): void {
+  const db = getDb();
+  upsertFoodRow(db, food);
+}
+
+function seedInitialData(db: DatabaseSync) {
+  // Always ensure foods table is populated/synced with FOOD_DATASET
   for (const f of FOOD_DATASET) {
-    upsertFood.run(
-      f.id,
-      f.slug,
-      f.name,
-      f.category,
-      f.dietaryType,
-      JSON.stringify(f.mealTypes),
-      f.servingLabel,
-      f.servingGrams,
-      f.calories,
-      f.protein_g,
-      f.carbs_g,
-      f.fat_g,
-      f.fiber_g,
-      f.sodium_mg,
-      f.sugar_g,
-      f.proteinRich ? 1 : 0,
-      f.balancedWeightFriendly ? 1 : 0,
-      JSON.stringify(f.aliases),
-      f.notes
-    );
+    upsertFoodRow(db, f);
   }
 
   const profileRow = db
@@ -347,7 +354,7 @@ export function listFoods(query?: string, category?: string, dietary?: string): 
     if (dietary && dietary !== 'all' && f.dietaryType !== dietary) return false;
     if (query && query.trim()) {
       const q = query.trim().toLowerCase();
-      const hay = `${f.name} ${f.aliases.join(' ')} ${f.notes}`.toLowerCase();
+      const hay = `${f.name} ${f.category} ${f.aliases.join(' ')} ${f.notes}`.toLowerCase();
       if (!hay.includes(q)) return false;
     }
     return true;

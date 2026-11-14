@@ -210,7 +210,7 @@ export function FoodRecognitionView({
         <div className="text-xs sm:text-sm text-slate-600">
           <span className="font-semibold text-slate-900">Inference Engine: </span>
           {classifierMode === 'gemini-vision'
-            ? 'Live Multimodal Vision Classifier mapped to Indian & Food-101 Nutrition Dataset (MobileNetV2/ResNet50 Python pipeline included in NutriScan_AI/)'
+            ? 'Live Multimodal Vision Classifier mapped to Multi-Cuisine & Food-101 Nutrition Dataset (MobileNetV2/ResNet50 Python pipeline included in NutriScan_AI/)'
             : 'Demonstration Sample Mode active (connect GEMINI_API_KEY or trained MobileNetV2 .keras model in NutriScan_AI/models/ for arbitrary photo inference)'}
         </div>
         <button
@@ -294,7 +294,7 @@ export function FoodRecognitionView({
                   Choose a meal photograph from your device
                 </p>
                 <p className="text-xs text-slate-500">
-                  Idli, Masala Dosa, Biryani, Dal, Paneer Curry, Pizza, Salad, and more
+                  Idli, Masala Dosa, Biryani, Ramen, Tacos, Pasta, Falafel, Pizza, and more
                 </p>
               </div>
             )}
@@ -479,8 +479,10 @@ export function FoodRecognitionView({
                       </div>
                     </div>
                     <p className="text-xs text-slate-500 pt-1">
-                      {matchedFood.notes} Nutrition values are estimates and vary by
-                      ingredients and preparation.
+                      {matchedFood.notes}
+                      {result.prediction.nutritionSource === 'ai-estimate'
+                        ? ' Visual nutrition estimate (not in curated dataset).'
+                        : ' Nutrition values are estimates and vary by ingredients and preparation.'}
                     </p>
                   </div>
 

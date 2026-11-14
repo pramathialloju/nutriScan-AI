@@ -156,7 +156,7 @@ export function DashboardView({
               Click to select a meal photo (JPG, PNG, or WebP)
             </p>
             <p className="text-xs text-slate-500 mt-1">
-              Supports Indian dishes (Idli, Masala Dosa, Biryani, Dal, Paneer Curry) and Food-101 items
+              Supports multi-cuisine dishes across Indian, Italian, Asian, Mexican, Mediterranean, and American meals
             </p>
           </label>
         ) : (
@@ -271,6 +271,12 @@ export function DashboardView({
                         </div>
                       </div>
 
+                      {result.prediction.nutritionSource === 'ai-estimate' && (
+                        <p className="text-xs text-slate-500">
+                          Visual nutrition estimate (not in curated dataset) · varies by brand and portion size.
+                        </p>
+                      )}
+
                       <div className="flex flex-wrap items-center gap-2.5 pt-1">
                         <select
                           aria-label="Meal category"
@@ -347,7 +353,7 @@ export function DashboardView({
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-slate-900">Nutrition Information</p>
-              <p className="text-xs text-slate-500 truncate">Indian &amp; Food-101 lookup</p>
+              <p className="text-xs text-slate-500 truncate">Multi-cuisine nutrition lookup</p>
             </div>
           </button>
 

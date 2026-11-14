@@ -15,6 +15,7 @@ import {
   saveMealPlanForDay,
   saveScanRecord,
   updateDiaryEntry,
+  upsertFoodItem,
 } from './server/db.ts';
 import { classifyFoodImage } from './server/classifier.ts';
 import {
@@ -148,6 +149,10 @@ async function startServer() {
         sampleKey,
       });
 
+      if (prediction.matchedFood && prediction.nutritionSource === 'ai-estimate') {
+        upsertFoodItem(prediction.matchedFood);
+      }
+
       const savedScan = saveScanRecord({
         image_url: imageUrl,
         predicted_label: prediction.predictedLabel,
@@ -280,12 +285,17 @@ async function startServer() {
     const mealType = MEAL_SLOTS.includes(req.query.mealType as MealSlot)
       ? (req.query.mealType as MealSlot)
       : 'all';
+    const cuisine =
+      typeof req.query.cuisine === 'string' && req.query.cuisine.trim()
+        ? req.query.cuisine.trim()
+        : 'all';
 
     const foods = listFoods();
     const recommendations = generateRecommendations(foods, {
       dietary,
       focus,
       mealType,
+      cuisine,
     });
     res.json({ recommendations });
   });

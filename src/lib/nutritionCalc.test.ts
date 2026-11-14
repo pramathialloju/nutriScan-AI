@@ -131,12 +131,26 @@ test('generateRecommendations filters dietary, mealType, and focus accurately', 
   });
   assert.ok(indianBreakfast.some((r) => r.food.name === 'Idli'));
   assert.ok(indianBreakfast.every((r) => r.food.category === 'Indian'));
+
+  const mexicanMeals = generateRecommendations(FOOD_DATASET, {
+    cuisine: 'Mexican',
+  });
+  assert.ok(mexicanMeals.length >= 3);
+  assert.ok(mexicanMeals.every((r) => r.food.category === 'Mexican'));
 });
 
-test('matchPredictedLabelToFood handles Food-101 snake_case and Indian dishes', () => {
+test('matchPredictedLabelToFood handles Food-101 snake_case and multi-cuisine dishes', () => {
   assert.equal(matchPredictedLabelToFood('masala_dosa')?.id, 'indian_masala_dosa');
   assert.equal(matchPredictedLabelToFood('Paneer Butter Masala')?.id, 'indian_paneer_curry');
   assert.equal(matchPredictedLabelToFood('caesar_salad')?.id, 'f101_caesar_salad');
+  assert.equal(matchPredictedLabelToFood('Chocolate Ice Cream Bar')?.id, 'f101_chocolate_ice_cream_bar');
+  assert.equal(matchPredictedLabelToFood('ice_cream')?.id, 'f101_ice_cream');
+  assert.equal(matchPredictedLabelToFood('Samosa')?.id, 'indian_samosa');
+  assert.equal(matchPredictedLabelToFood('Fried Rice')?.id, 'f101_fried_rice');
+  assert.equal(matchPredictedLabelToFood('ramen')?.id, 'asian_ramen');
+  assert.equal(matchPredictedLabelToFood('tacos')?.id, 'mexican_tacos');
+  assert.equal(matchPredictedLabelToFood('falafel')?.id, 'med_falafel_wrap');
+  assert.equal(matchPredictedLabelToFood('lasagna')?.id, 'italian_lasagna');
   assert.equal(matchPredictedLabelToFood('unknown_abstract_object'), null);
 });
 
