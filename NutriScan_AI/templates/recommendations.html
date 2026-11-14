@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Recommendations — NutriScan AI{% endblock %}
+{% block content %}
+<h1 class="h4 fw-bold mb-3">Balanced Meal Recommendations</h1>
+<div class="row g-3">
+  {% for r in recommendations %}
+  <div class="col-md-4">
+    <div class="nutri-card p-3 h-100">
+      <div class="small text-secondary">{{ r.food.category }} · {{ r.food.dietary_type }}</div>
+      <h2 class="h6 fw-bold mt-1">{{ r.food.name }}</h2>
+      <p class="small text-secondary">{{ r.reason }}</p>
+      <div class="small fw-semibold text-success">{{ r.food.calories }} kcal · {{ r.food.protein_g }}g protein</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

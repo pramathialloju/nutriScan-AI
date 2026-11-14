@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}NutriScan AI — Dashboard{% endblock %}
+{% block content %}
+<div class="nutri-card p-4 p-md-5 mb-4">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+      <h1 class="h3 fw-bold mb-1">What are you eating today?</h1>
+      <p class="text-secondary small mb-0">Upload a meal photo to identify your dish and inspect estimated nutrition.</p>
+    </div>
+    <label for="dashboardFoodInput" class="btn btn-success fw-semibold px-4 py-2 mb-0" style="cursor:pointer;">
+      Upload Food Image
+    </label>
+    <input id="dashboardFoodInput" type="file" accept="image/*" class="d-none" />
+  </div>
+
+  <div id="scannerWorkspace" class="row g-4 align-items-start d-none border-top pt-3">
+    <div class="col-md-5">
+      <img id="dashboardPreview" class="img-fluid rounded border mb-3" style="max-height:240px;object-fit:cover;width:100%;" alt="Food preview" />
+      <button id="identifyBtn" type="button" class="btn btn-success w-100 fw-semibold">Identify Food</button>
+    </div>
+    <div class="col-md-7" id="dashboardResult">
+      <div class="p-3 bg-light rounded border text-secondary small">
+        Image selected. Click <strong>Identify Food</strong> to detect the dish.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <a href="/food-recognition" class="nutri-card p-3 d-block text-decoration-none text-dark h-100">
+      <div class="fw-semibold small">Food Recognition</div>
+      <div class="text-secondary small">Full scanner &amp; history</div>
+    </a>
+  </div>
+  <div class="col-6 col-lg-3">
+    <a href="/nutrition" class="nutri-card p-3 d-block text-decoration-none text-dark h-100">
+      <div class="fw-semibold small">Nutrition Information</div>
+      <div class="text-secondary small">Indian &amp; Food-101 lookup</div>
+    </a>
+  </div>
+  <div class="col-6 col-lg-3">
+    <a href="/meal-planner" class="nutri-card p-3 d-block text-decoration-none text-dark h-100">
+      <div class="fw-semibold small">Meal Planner</div>
+      <div class="text-secondary small">Daily &amp; weekly schedule</div>
+    </a>
+  </div>
+  <div class="col-6 col-lg-3">
+    <a href="/food-diary" class="nutri-card p-3 d-block text-decoration-none text-dark h-100">
+      <div class="fw-semibold small">Food Diary</div>
+      <div class="text-secondary small">Recorded meals &amp; log</div>
+    </a>
+  </div>
+</div>
+
+<div class="nutri-card p-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h2 class="h6 fw-bold mb-0">Today's Nutrition Summary</h2>
+      <small class="text-secondary">{{ summary.count }} recorded meals today</small>
+    </div>
+    <a href="/food-diary" class="small fw-semibold text-success text-decoration-none">View Food Diary</a>
+  </div>
+  <div class="row g-3">
+    <div class="col-6 col-md-3"><div class="p-3 bg-light rounded border"><div class="small text-secondary">Calories</div><div class="fw-bold">{{ summary.calories }} kcal</div></div></div>
+    <div class="col-6 col-md-3"><div class="p-3 bg-light rounded border"><div class="small text-secondary">Protein</div><div class="fw-bold text-success">{{ summary.protein }} g</div></div></div>
+    <div class="col-6 col-md-3"><div class="p-3 bg-light rounded border"><div class="small text-secondary">Carbohydrates</div><div class="fw-bold">{{ summary.carbs }} g</div></div></div>
+    <div class="col-6 col-md-3"><div class="p-3 bg-light rounded border"><div class="small text-secondary">Fats</div><div class="fw-bold">{{ summary.fat }} g</div></div></div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const fileInput = document.getElementById("dashboardFoodInput");
+const workspace = document.getElementById("scannerWorkspace");
+const preview = document.getElementById("dashboardPreview");
+const identifyBtn = document.getElementById("identifyBtn");
+const resultBox = document.getElementById("dashboardResult");
+let selectedFile = null;
+
+fileInput.addEventListener("change", (e) => {
+  selectedFile = e.target.files?.[0] || null;
+  if (!selectedFile) return;
+  preview.src = URL.createObjectURL(selectedFile);
+  workspace.classList.remove("d-none");
+});
+
+identifyBtn.addEventListener("click", async () => {
+  if (!selectedFile) return;
+  const fd = new FormData();
+  fd.append("image", selectedFile);
+  resultBox.innerHTML = '<div class="p-3 bg-light rounded border small">Identifying dish...</div>';
+  const res = await fetch("/api/predict", { method: "POST", body: fd });
+  const data = await res.json();
+  if (data.error || !data.matched_food) {
+    resultBox.innerHTML = `<div class="alert alert-warning mb-0 small"><strong>${data.predicted_label || "Notice"}</strong>: ${data.message || data.error}</div>`;
+    return;
+  }
+  const f = data.matched_food;
+  resultBox.innerHTML = `
+    <div class="p-3 bg-light rounded border">
+      <h3 class="h5 fw-bold mb-2">${f.name}</h3>
+      <div class="row g-2 small">
+        <div class="col-6 col-sm-3"><strong>${f.calories} kcal</strong><br/>Calories</div>
+        <div class="col-6 col-sm-3"><strong>${f.protein_g} g</strong><br/>Protein</div>
+        <div class="col-6 col-sm-3"><strong>${f.carbs_g} g</strong><br/>Carbs</div>
+        <div class="col-6 col-sm-3"><strong>${f.fat_g} g</strong><br/>Fats</div>
+      </div>
+    </div>`;
+});
+</script>
+{% endblock %}

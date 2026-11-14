@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Meal Planner — NutriScan AI{% endblock %}
+{% block content %}
+<h1 class="h4 fw-bold mb-3">Daily Meal Planner ({{ day }})</h1>
+<div class="nutri-card p-4">
+  {% if items %}
+    <ul class="list-group list-group-flush">
+      {% for item in items %}
+      <li class="list-group-item d-flex justify-content-between px-0">
+        <span><strong>{{ item.meal_slot }}:</strong> {{ item.food_name }}</span>
+        <span>{{ item.calories }} kcal</span>
+      </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-secondary small mb-0">No saved items for {{ day }} yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

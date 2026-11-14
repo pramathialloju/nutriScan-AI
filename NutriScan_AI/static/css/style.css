@@ -1,0 +1,22 @@
+body {
+  background-color: #f8faf9;
+  color: #0f172a;
+}
+
+.nutri-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+}
+
+.nutri-sidebar {
+  min-height: 100vh;
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+}
+
+.nav-link.active {
+  background-color: #ecfdf5;
+  color: #047857;
+  font-weight: 600;
+}

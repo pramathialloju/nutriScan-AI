@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Analytics — NutriScan AI{% endblock %}
+{% block content %}
+<h1 class="h4 fw-bold mb-3">Nutrition Analytics</h1>
+<div id="emptyState" class="nutri-card p-5 text-center d-none">
+  <p class="text-secondary mb-2">No saved SQLite food diary records yet.</p>
+  <a href="/food-diary" class="btn btn-success btn-sm">Log First Entry</a>
+</div>
+<div id="chartsGrid" class="row g-4">
+  <div class="col-lg-6">
+    <div class="nutri-card p-4">
+      <h2 class="h6 fw-semibold mb-3">Daily Macronutrients (g)</h2>
+      <canvas id="dailyChart"></canvas>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="nutri-card p-4">
+      <h2 class="h6 fw-semibold mb-3">7-Day Energy Intake (kcal)</h2>
+      <canvas id="weeklyChart"></canvas>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+fetch("/api/analytics").then(r => r.json()).then(data => {
+  if (!data.has_data) {
+    document.getElementById("emptyState").classList.remove("d-none");
+    document.getElementById("chartsGrid").classList.add("d-none");
+    return;
+  }
+  new Chart(document.getElementById("dailyChart"), {
+    type: "doughnut",
+    data: {
+      labels: ["Protein", "Carbs", "Fat"],
+      datasets: [{ data: [data.daily.protein, data.daily.carbs, data.daily.fat], backgroundColor: ["#15803d", "#0ea5e9", "#d97706"] }]
+    }
+  });
+  new Chart(document.getElementById("weeklyChart"), {
+    type: "line",
+    data: {
+      labels: data.weekly_labels,
+      datasets: [{ label: "kcal", data: data.weekly_calories, borderColor: "#15803d", tension: 0.25 }]
+    }
+  });
+});
+</script>
+{% endblock %}

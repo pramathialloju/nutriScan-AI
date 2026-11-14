@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Food Recognition — NutriScan AI{% endblock %}
+{% block content %}
+<h1 class="h4 fw-bold mb-3">AI Food Image Recognition</h1>
+<div class="nutri-card p-4 mb-4">
+  <form id="predictForm" enctype="multipart/form-data">
+    <label for="foodImageInput" class="form-label fw-medium">Upload Meal Photograph</label>
+    <input id="foodImageInput" name="image" type="file" accept="image/*" class="form-control mb-3" required />
+    <img id="foodPreviewImg" class="img-fluid rounded mb-3 d-none" style="max-height:260px" alt="Food Preview" />
+    <button type="submit" class="btn btn-success">Identify Food</button>
+  </form>
+  <div id="predictResult" class="mt-4"></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById("predictForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const res = await fetch("/api/predict", { method: "POST", body: formData });
+  const data = await res.json();
+  const box = document.getElementById("predictResult");
+  if (data.error) {
+    box.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+    return;
+  }
+  box.innerHTML = `<div class="alert alert-light border"><strong>${data.predicted_label}</strong> (${Math.round(data.confidence * 100)}%)<br/><small>${data.message}</small></div>`;
+});
+</script>
+{% endblock %}

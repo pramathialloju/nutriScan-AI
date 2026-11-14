@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Food Diary — NutriScan AI{% endblock %}
+{% block content %}
+<h1 class="h4 fw-bold mb-3">Food Diary ({{ target_date }})</h1>
+<div class="nutri-card p-4 mb-4">
+  <form id="diaryForm" class="row g-2 align-items-end">
+    <div class="col-md-5">
+      <label class="form-label small">Food Item</label>
+      <select name="food_id" class="form-select">
+        {% for f in foods %}
+        <option value="{{ f.id }}">{{ f.name }} ({{ f.calories }} kcal)</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small">Meal Category</label>
+      <select name="meal_category" class="form-select">
+        <option>Breakfast</option><option>Lunch</option><option>Evening Snacks</option><option>Dinner</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small">Servings</label>
+      <input type="number" step="0.5" min="0.5" value="1" name="serving_multiplier" class="form-control" />
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-success w-100">Add Entry</button>
+    </div>
+  </form>
+</div>
+<div class="nutri-card p-4">
+  {% if entries %}
+    <ul class="list-group list-group-flush">
+      {% for e in entries %}
+      <li class="list-group-item d-flex justify-content-between px-0">
+        <span>{{ e.food_name }} · {{ e.meal_category }} ({{ e.serving_multiplier }}x)</span>
+        <span>{{ e.calories }} kcal</span>
+      </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-secondary small mb-0">No diary entries recorded for {{ target_date }}.</p>
+  {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById("diaryForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  await fetch("/api/diary", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(Object.fromEntries(fd.entries()))
+  });
+  window.location.reload();
+});
+</script>
+{% endblock %}
